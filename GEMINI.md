@@ -1,24 +1,16 @@
 # Anime Monarch Reels Studio
+Create polished 2D/3D HTML animation for Anime Monarch (@anime.monarch7), using this cloud-first repo.
 
-Create polished 2D/3D HTML animation and motion graphics for Anime Monarch (@anime.monarch7).
+## Vendored skills
+Read the actual instructions before each task:
+- ./skills/animate/plugins/animate/skills/animate/SKILL.md
+- ./skills/claude-animation-skills/skills/ (read relevant SKILL.md files)
+- ./skills/motion-skills/ (read relevant SKILL.md files)
+- ./skills/bang-motion/SKILL.md
+If a path differs, locate the real SKILL.md and state its path; never invent skill contents.
 
-## Skill references — read before each task
-- `./skills/animate/plugins/animate/skills/animate/SKILL.md`
-- `./skills/claude-animation-skills/skills/` (choose relevant skill docs)
-- `./skills/motion-skills/` (choose relevant skill docs)
-- `./skills/bang-motion/SKILL.md`
+## Reels standards
+1080×1920, 9:16, 24 fps, H.264 MP4, yuv420p, no watermark. Titles, Tenglish pop-up captions, and CTAs stay within y=250..1499 (top 250 and bottom 420 px are excluded). Meaningful visual/scene/UI change every 1.5–2.5 seconds. Dynamic headers, chips, meters, multiplane 3D camera moves and full-body character rigs where appropriate. Captions are punchy 2–4 word Tenglish. ElevenLabs VO if provided; layered non-musical SFX only; no BGM.
 
-If a referenced path is missing, locate the actual skill files in the cloned repo and report the path; never pretend to have read unavailable instructions.
-
-## Reel defaults
-- 1080×1920, portrait 9:16, 24 fps
-- Export H.264 MP4; zero watermarks
-- Keep captions, titles, and CTAs out of top 250 px and bottom 420 px
-- Meaningful visual/scene/UI change every 1.5–2.5 seconds
-- Use dynamic headers, pop-in chips, animated meters, 3D multiplane camera moves, and full-body character rigs where suitable
-- Captions: punchy 2–4 word Tenglish pop-ups
-- ElevenLabs voiceover when provided/requested
-- Layer non-musical SFX; no BGM
-
-## Production workflow
-Clarify message, duration, assets, and CTA if needed. Inspect skills/assets, build reusable HTML/CSS/JS scenes, preview at 1080×1920, check safe zones and timing, use Playwright/Chromium for browser checks/capture and FFmpeg for encoding. Never claim an MP4 exists unless the output was created and checked.
+## Deterministic rendering
+Use a pure time-based timeline and expose window.__seekTo(t). Do not use timers, random, wall-clock animation or unseekable CSS keyframes in rendered scenes. Playwright captures exact timestamps at 24 fps and pipes frames to FFmpeg. Output out/reel.mp4. Optional VO: assets/audio/voiceover.wav. Optional SFX: files in assets/audio/sfx/. Only mix these explicit voice/SFX files; never add music. Verify output with FFprobe before claiming render success.
