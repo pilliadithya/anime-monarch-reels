@@ -24,6 +24,9 @@ try{
   await page.evaluate(()=>document.fonts.ready);
   const info=await page.evaluate(()=>({w:innerWidth,h:innerHeight,seek:typeof window.__seekTo==="function"}));
   if(info.w!==width||info.h!==height||!info.seek)throw Error("Expected 1080x1920 with __seekTo(t); got "+JSON.stringify(info));
+  const boxes=await page.evaluate(()=>[...document.querySelectorAll(".brand,.scene h1,.caption,#cta")].map(el=>{const r=el.getBoundingClientRect();return {item:el.className||el.id,top:r.top,bottom:r.bottom}}));
+  const unsafe=boxes.filter(b=>b.top<250||b.bottom>1500);
+  if(unsafe.length)throw Error("Reels safe-zone violation: "+JSON.stringify(unsafe));
   const args=["-hide_banner","-loglevel","error","-y","-f","image2pipe","-vcodec","mjpeg","-framerate",String(fps),"-i","pipe:0"];
   const audio=[...(vo?[{path:vo,gain:"1"}]:[]),...sfx.map(path=>({path,gain:"0.75"}))];
   for(const a of audio)args.push("-i",a.path);
@@ -34,12 +37,23 @@ try{
     args.push("-filter_complex",filters.join(";"),"-map","0:v:0","-map","[aout]","-c:a","aac","-b:a","192k");
   }else args.push("-map","0:v:0","-an");
   args.push("-t",String(duration),"-vf","scale=1080:1920:flags=lanczos,setsar=1","-r",String(fps),"-c:v","libx264","-preset","medium","-crf","18","-pix_fmt","yuv420p","-movflags","+faststart",output);
-  encoder=spawn("ffmpeg",args,{stdio:["pipe","ignore","pipe"]});let log="";encoder.stderr.on("data",d=>log+=d);
-  const exit=new Promise((ok,bad)=>{encoder.once("error",bad);encoder.once("close",c=>c===0?ok():bad(Error("FFmpeg exit "+c+": "+log)))});
+  encoder=spawn("ffmpeg",args,{stdio:["pipe","ignore","pipe"]});let log="",encoderClosed=false,encoderFailure=null;encoder.stderr.on("data",d=>log+=d);encoder.on("error",e=>{encoderFailure=e;encoderClosed=true});encoder.stdin.on("error",e=>{encoderFailure=e});
+  const exit=new Promise((ok,bad)=>{encoder.once("error",bad);encoder.once("close",c=>{encoderClosed=true;c===0?ok():bad(Error("FFmpeg exit "+c+": "+log))})});
+  async function writeFrame(buffer){
+    if(encoderClosed||encoder.exitCode!==null)throw encoderFailure||Error("FFmpeg closed before all frames were written: "+log);
+    let accepted;try{accepted=encoder.stdin.write(buffer)}catch(e){throw encoderFailure||e}
+    if(!accepted)await new Promise((resolve,reject)=>{
+      const clean=()=>{encoder.stdin.removeListener("drain",drain);encoder.stdin.removeListener("error",fail);encoder.removeListener("close",closed)};
+      const drain=()=>{clean();resolve()};
+      const fail=e=>{clean();reject(e||encoderFailure||Error("FFmpeg input pipe failed: "+log))};
+      const closed=()=>fail(encoderFailure||Error("FFmpeg closed before all frames were written: "+log));
+      encoder.stdin.once("drain",drain);encoder.stdin.once("error",fail);encoder.once("close",closed);
+    });
+  }
   for(let frame=0;frame<frames;frame++){
     await page.evaluate(t=>window.__seekTo(t),frame/fps);
     const png=await page.screenshot({type:"jpeg",quality:92,animations:"disabled"});
-    if(!encoder.stdin.write(png))await new Promise(r=>encoder.stdin.once("drain",r));
+    await writeFrame(png);
     if(frame%12===0)console.log("Captured "+(frame+1)+"/"+frames+" frames");
   }
   encoder.stdin.end();await exit;
