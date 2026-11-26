@@ -24,7 +24,7 @@ try{
   await page.evaluate(()=>document.fonts.ready);
   const info=await page.evaluate(()=>({w:innerWidth,h:innerHeight,seek:typeof window.__seekTo==="function"}));
   if(info.w!==width||info.h!==height||!info.seek)throw Error("Expected 1080x1920 with __seekTo(t); got "+JSON.stringify(info));
-  const args=["-hide_banner","-loglevel","error","-y","-f","image2pipe","-vcodec","png","-framerate",String(fps),"-i","pipe:0"];
+  const args=["-hide_banner","-loglevel","error","-y","-f","image2pipe","-vcodec","mjpeg","-framerate",String(fps),"-i","pipe:0"];
   const audio=[...(vo?[{path:vo,gain:"1"}]:[]),...sfx.map(path=>({path,gain:"0.75"}))];
   for(const a of audio)args.push("-i",a.path);
   if(audio.length){
