@@ -1,8 +1,1 @@
-{
-  "name": "anime-monarch-reels",
-  "version": "1.0.0",
-  "private": true,
-  "description": "HTML/CSS/JS animation workspace for Anime Monarch Reels",
-  "scripts": { "dev": "vite --host 0.0.0.0", "build": "vite build", "preview": "vite preview --host 0.0.0.0" },
-  "devDependencies": { "playwright": "^1.56.0", "vite": "^6.4.1" }
-}
+{"name":"anime-monarch-reels","version":"1.2.0","private":true,"description":"Deterministic HTML animation and H.264 Reel renderer for Anime Monarch","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0","render:mp4":"node scripts/render-mp4.mjs"},"devDependencies":{"playwright":"^1.56.0","vite":"^6.4.1"}}
