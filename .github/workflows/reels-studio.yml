@@ -1,72 +1,74 @@
-name: Reels Studio Cloud Setup & Build
-
+name: Reels Studio — Vendor Skills & Render MP4
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "src/**"
-      - "index.html"
-      - "package.json"
-      - "GEMINI.md"
-      - "AGENTS.md"
-      - ".github/workflows/reels-studio.yml"
-
+      - "src/main.js"
 permissions:
-  contents: read
-
+  contents: write
 jobs:
-  setup-and-build:
+  render-reel:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
-      - name: Checkout workspace
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Vendor and commit four animation skill repos
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-
-      - name: Fetch animation skills
-        run: |
+          set -euo pipefail
           mkdir -p skills
-          git clone --depth 1 https://github.com/cth9191/animate skills/animate
-          git clone --depth 1 https://github.com/artemnovitckii/claude-animation-skills skills/claude-animation-skills
-          git clone --depth 1 https://github.com/iart-ai/motion-skills skills/motion-skills
-          git clone --depth 1 https://github.com/bangtutorial/bang-motion skills/bang-motion
-
+          vendor(){ url="$1"; path="$2"; if [ -d "$path/.git" ]; then git -C "$path" pull --ff-only; elif [ -d "$path" ]; then echo "Using committed vendor: $path"; else git clone --depth 1 "$url" "$path"; rm -rf "$path/.git"; fi; }
+          vendor https://github.com/cth9191/animate.git skills/animate
+          vendor https://github.com/artemnovitckii/claude-animation-skills.git skills/claude-animation-skills
+          vendor https://github.com/iart-ai/motion-skills.git skills/motion-skills
+          vendor https://github.com/bangtutorial/bang-motion.git skills/bang-motion
+          test -f skills/animate/plugins/animate/skills/animate/SKILL.md
+          test -f skills/bang-motion/SKILL.md
+          find skills -type f -iname 'SKILL.md' | wc -l
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add skills
+          if ! git diff --cached --quiet; then git commit -m "Vendor animation skills for project context"; git push origin HEAD:main; else echo "Skills already committed"; fi
       - name: Install project dependencies
         run: npm install
-
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-
-      - name: Install Python Playwright
-        run: python -m pip install playwright
-
       - name: Verify tools
         run: |
           node --version
           python --version
           ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
           npx playwright --version
-          test -f skills/animate/plugins/animate/skills/animate/SKILL.md
-          test -f skills/bang-motion/SKILL.md
-
-      - name: Build reel preview
+      - name: Set optional VO and SFX
+        shell: bash
+        run: |
+          if [ -f assets/audio/voiceover.wav ]; then echo "VO_FILE=assets/audio/voiceover.wav" >> "$GITHUB_ENV"; fi
+          sfx="$(find assets/audio/sfx -type f \( -iname '*.wav' -o -iname '*.mp3' -o -iname '*.ogg' -o -iname '*.m4a' \) 2>/dev/null | sort | paste -sd, - || true)"
+          if [ -n "$sfx" ]; then echo "SFX_FILES=$sfx" >> "$GITHUB_ENV"; fi
+      - name: Render 1080x1920 H.264 MP4 at 24 fps
+        run: npm run render:mp4
+      - name: Upload final MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: anime-monarch-reels-mp4
+          path: out/reel.mp4
+          if-no-files-found: error
+          retention-days: 14
+      - name: Build web preview
         run: npm run build
-
-      - name: Upload built preview
+      - name: Upload preview
         uses: actions/upload-artifact@v4
         with:
           name: anime-monarch-reels-preview
