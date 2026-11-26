@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { mkdir, access, mkdtemp, rm } from "node:fs/promises";
 import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
-import { setTimeout as sleep } from "node:timers/promises";
+import { createServer } from "vite";
 
 const root=process.cwd(), output=resolve(root,process.env.OUTPUT_FILE||"out/reel.mp4");
 const fps=24,width=1080,height=1920,duration=Number(process.env.DURATION||6),frames=Math.round(duration*fps);
@@ -12,13 +12,11 @@ const sfx=(process.env.SFX_FILES||"").split(",").map(x=>x.trim()).filter(Boolean
 if(!Number.isFinite(duration)||duration!==6)throw new Error("This starter timeline is exactly 6 seconds; update the timeline before changing DURATION.");
 await mkdir(dirname(output),{recursive:true});
 const frameDir=await mkdtemp(join(tmpdir(),"anime-monarch-frames-"));
-const server=spawn("npm",["run","dev","--","--host","127.0.0.1","--port","4173","--strictPort"],{stdio:["ignore","pipe","pipe"]});
-let serverLog="";server.stdout.on("data",d=>serverLog+=d);server.stderr.on("data",d=>serverLog+=d);
-async function ready(){for(let i=0;i<80;i++){try{if((await fetch("http://127.0.0.1:4173")).ok)return}catch{}if(server.exitCode!==null)throw Error(serverLog);await sleep(250)}throw Error("Vite did not start: "+serverLog)}
-let browser;
+let browser,viteServer;
 try{
   for(const file of [vo,...sfx].filter(Boolean))await access(file);
-  await ready();
+  viteServer=await createServer({logLevel:"error",server:{host:"127.0.0.1",port:4173,strictPort:true}});
+  await viteServer.listen();
   browser=await chromium.launch({headless:true});
   const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1,colorScheme:"dark"});
   const pageErrors=[];page.on("pageerror",e=>pageErrors.push(e.message));
