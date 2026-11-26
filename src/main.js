@@ -12,4 +12,4 @@ caption.style.opacity=String(visible*smooth((local-.35)/.2));caption.style.trans
 cta.style.opacity=String(visible*smooth((local-.62)/.2));cta.style.transform=`translate3d(0,${(1-smooth((local-.62)/.2))*16}px,0)`;
 progress.style.transform=`scaleX(${t/6})`;reel.dataset.scene=String(idx+1);core.style.transform=`rotate(${t*48}deg) scale(${.9+Math.sin(t*2.4)*.08})`;
 };
-window.__seekTo(0);
+// Renderer contract: every captured frame is derived only from the requested timestamp.\nwindow.__seekTo(0);
