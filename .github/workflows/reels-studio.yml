@@ -71,6 +71,7 @@ jobs:
           sfx="$(find assets/audio/sfx -type f \( -iname '*.wav' -o -iname '*.mp3' -o -iname '*.ogg' -o -iname '*.m4a' \) 2>/dev/null | sort | paste -sd, - || true)"
           if [ -n "$sfx" ]; then echo "SFX_FILES=$sfx" >> "$GITHUB_ENV"; fi
       - name: Render 1080x1920 H.264 MP4 at 24 fps
+        timeout-minutes: 8
         run: npm run render:mp4
       - name: Upload final MP4
         uses: actions/upload-artifact@v4
