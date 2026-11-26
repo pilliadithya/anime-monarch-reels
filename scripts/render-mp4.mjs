@@ -57,6 +57,6 @@ try{
   console.log("Verified "+output+": 1080x1920 H.264 yuv420p 24fps, "+frames+" frames.");
 }finally{
   if(browser)await browser.close().catch(()=>{});
-  if(server.exitCode===null)server.kill("SIGTERM");
+  if(viteServer)await viteServer.close().catch(()=>{});
   await rm(frameDir,{recursive:true,force:true}).catch(()=>{});
 }
