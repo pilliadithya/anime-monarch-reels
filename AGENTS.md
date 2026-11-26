@@ -1,13 +1,8 @@
-# Agent Instructions — Anime Monarch Reels
-
-Read relevant skills before implementation:
-- `skills/animate/plugins/animate/skills/animate/SKILL.md`
-- `skills/claude-animation-skills/skills/`
-- `skills/motion-skills/`
-- `skills/bang-motion/SKILL.md`
-
-Follow GEMINI.md as the complete production brief.
-
-Defaults: 1080×1920 (9:16), 24 fps, H.264 MP4, no watermark. Keep important text out of top 250 px and bottom 420 px. Change visuals every 1.5–2.5 seconds. Use short 2–4 word Tenglish captions, voiceover if provided, layered SFX, and no BGM.
-
-Use HTML/CSS/JS, Playwright/Chromium, and FFmpeg. Verify files and skill instructions before claiming a successful render.
+# Anime Monarch Reels — Agent Rules
+Read actual vendored skill files before implementing:
+- skills/animate/plugins/animate/skills/animate/SKILL.md
+- relevant SKILL.md files under skills/claude-animation-skills/skills/
+- relevant SKILL.md files under skills/motion-skills/
+- skills/bang-motion/SKILL.md
+Follow GEMINI.md. Deliver 1080×1920 9:16, 24 fps H.264/yuv420p MP4, no watermark. Keep all titles/captions/CTAs between y=250 and y=1499. Scene/visual changes every 1.5–2.5s; Tenglish captions 2–4 words. Optional VO and layered non-musical SFX only; no BGM.
+Rendering must be deterministic and expose window.__seekTo(t). Use Playwright exact frame capture and FFmpeg. Validate output via FFprobe. Never report success without a real verified MP4.
