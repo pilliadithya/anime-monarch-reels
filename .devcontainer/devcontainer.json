@@ -1,0 +1,9 @@
+{
+  "name": "Anime Monarch Reels Studio",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "features": { "ghcr.io/devcontainers/features/python:1": { "version": "3.12" } },
+  "postCreateCommand": "bash scripts/setup-workspace.sh",
+  "forwardPorts": [4173],
+  "portsAttributes": { "4173": { "label": "Reels preview", "onAutoForward": "openPreview" } },
+  "customizations": { "vscode": { "extensions": ["Google.gemini-cli-vscode-ide-companion", "ms-python.python", "ms-playwright.playwright"] } }
+}
