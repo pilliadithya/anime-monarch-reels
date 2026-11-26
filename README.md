@@ -1,18 +1,6 @@
 # Anime Monarch Reels Studio
+Cloud-first HTML/CSS/JS animation pipeline. The GitHub Actions workflow vendors four skill repositories into ./skills/, commits them, installs Playwright/Chromium and FFmpeg, renders out/reel.mp4 and uploads the MP4 artifact.
 
-Private Codespaces workspace for 2D/3D HTML animation.
+Run **Actions → Reels Studio — Vendor Skills & Render MP4 → Run workflow**. Download artifact `anime-monarch-reels-mp4`.
 
-## Start
-Open **Code → Codespaces → Create codespace on main** and wait for the setup script. It clones four skills into `./skills/` and installs Node.js, Python, Playwright/Chromium, and FFmpeg.
-
-Run `npm run dev` and open forwarded port 4173 for preview.
-
-## Verify
-```bash
-node --version
-python3 --version
-ffmpeg -version
-npx playwright --version
-```
-
-Production rules are in GEMINI.md and AGENTS.md: 1080×1920, 9:16, 24 fps, H.264 MP4, no watermark, safe zones top 250/bottom 420 px, no BGM.
+Timeline exposes `window.__seekTo(seconds)`; the starter is 6 seconds / 144 frames. Renderer captures exact 24fps frames at 1080×1920 and encodes H.264/yuv420p. Optional voiceover: assets/audio/voiceover.wav. Optional SFX: assets/audio/sfx/* (WAV/MP3/OGG/M4A). Only explicit VO/SFX are mixed; no BGM.
