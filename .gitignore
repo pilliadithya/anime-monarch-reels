@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.venv/
+playwright-report/
+test-results/
+*.mp4
+*.webm
+*.mov
+.DS_Store
