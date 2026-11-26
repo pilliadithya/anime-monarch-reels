@@ -1,0 +1,77 @@
+name: Reels Studio Cloud Setup & Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "index.html"
+      - "package.json"
+      - "GEMINI.md"
+      - "AGENTS.md"
+      - ".github/workflows/reels-studio.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  setup-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workspace
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Fetch animation skills
+        run: |
+          mkdir -p skills
+          git clone --depth 1 https://github.com/cth9191/animate skills/animate
+          git clone --depth 1 https://github.com/artemnovitckii/claude-animation-skills skills/claude-animation-skills
+          git clone --depth 1 https://github.com/iart-ai/motion-skills skills/motion-skills
+          git clone --depth 1 https://github.com/bangtutorial/bang-motion skills/bang-motion
+
+      - name: Install project dependencies
+        run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Python Playwright
+        run: python -m pip install playwright
+
+      - name: Verify tools
+        run: |
+          node --version
+          python --version
+          ffmpeg -version | head -n 1
+          npx playwright --version
+          test -f skills/animate/plugins/animate/skills/animate/SKILL.md
+          test -f skills/bang-motion/SKILL.md
+
+      - name: Build reel preview
+        run: npm run build
+
+      - name: Upload built preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: anime-monarch-reels-preview
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
