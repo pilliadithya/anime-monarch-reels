@@ -1,0 +1,1 @@
+Optional audio: add an ElevenLabs voiceover as voiceover.wav here. Put layered non-musical SFX in sfx/ (WAV/MP3/OGG/M4A). Workflow mixes only these inputs. No BGM. Use audio you have permission to use.
