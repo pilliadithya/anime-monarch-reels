@@ -36,7 +36,7 @@ try{
     filters.push(`${labels.join("")}amix=inputs=${audio.length}:duration=longest:dropout_transition=0,atrim=0:${duration},asetpts=PTS-STARTPTS[aout]`);
     args.push("-filter_complex",filters.join(";"),"-map","0:v:0","-map","[aout]","-c:a","aac","-b:a","192k");
   }else args.push("-map","0:v:0","-an");
-  args.push("-t",String(duration),"-vf","scale=1080:1920:flags=lanczos,setsar=1","-r",String(fps),"-c:v","libx264","-preset","medium","-crf","18","-pix_fmt","yuv420p","-movflags","+faststart",output);
+  args.push("-t",String(duration),"-vf","scale=1080:1920:flags=lanczos:out_range=tv,format=yuv420p,setsar=1","-r",String(fps),"-c:v","libx264","-preset","medium","-crf","18","-pix_fmt","yuv420p","-color_range","tv","-movflags","+faststart",output);
   encoder=spawn("ffmpeg",args,{stdio:["pipe","ignore","pipe"]});let log="",encoderClosed=false,encoderFailure=null;encoder.stderr.on("data",d=>log+=d);encoder.on("error",e=>{encoderFailure=e;encoderClosed=true});encoder.stdin.on("error",e=>{encoderFailure=e});
   const exit=new Promise((ok,bad)=>{encoder.once("error",bad);encoder.once("close",c=>{encoderClosed=true;c===0?ok():bad(Error("FFmpeg exit "+c+": "+log))})});
   async function writeFrame(buffer){
