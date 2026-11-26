@@ -8,7 +8,7 @@ const root=process.cwd(), output=resolve(root,process.env.OUTPUT_FILE||"out/reel
 const fps=24,width=1080,height=1920,duration=Number(process.env.DURATION||6),frames=Math.round(duration*fps);
 const vo=process.env.VO_FILE?resolve(root,process.env.VO_FILE):"";
 const sfx=(process.env.SFX_FILES||"").split(",").map(x=>x.trim()).filter(Boolean).map(x=>resolve(root,x));
-if(!Number.isFinite(duration)||duration<=0) throw new Error("DURATION must be positive");
+if(!Number.isFinite(duration)||duration!==6) throw new Error("This starter timeline is exactly 6 seconds; update the timeline before changing DURATION.");
 await mkdir(dirname(output),{recursive:true});
 const server=spawn("npm",["run","dev","--","--host","127.0.0.1","--port","4173","--strictPort"],{stdio:["ignore","pipe","pipe"]});
 let serverLog=""; server.stdout.on("data",d=>serverLog+=d); server.stderr.on("data",d=>serverLog+=d);
@@ -38,9 +38,9 @@ try{
   const exit=new Promise((ok,bad)=>{encoder.once("error",bad);encoder.once("close",c=>c===0?ok():bad(Error("FFmpeg exit "+c+": "+log)))});
   for(let frame=0;frame<frames;frame++){
     await page.evaluate(t=>window.__seekTo(t),frame/fps);
-    const png=await page.screenshot({type:"png",animations:"disabled"});
+    const png=await page.screenshot({type:"jpeg",quality:92,animations:"disabled"});
     if(!encoder.stdin.write(png))await new Promise(r=>encoder.stdin.once("drain",r));
-    if(frame%24===0)console.log("Frame "+(frame+1)+"/"+frames);
+    if(frame%12===0)console.log("Captured "+(frame+1)+"/"+frames+" frames");
   }
   encoder.stdin.end();await exit;
   if(pageErrors.length)throw Error("Browser errors: "+pageErrors.join("; "));
